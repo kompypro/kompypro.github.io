@@ -1,157 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>KompyPro</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f6f8fa; }
-    h1 { display: flex; align-items: center; gap: 10px; }
-    .breadcrumb { margin: 20px 0; font-size: 16px; background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .breadcrumb a { color: #0366d6; text-decoration: none; cursor: pointer; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    #file-list { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 0; list-style: none; }
-    #file-list li { padding: 12px 16px; border-bottom: 1px solid #eaeef2; display: flex; align-items: center; gap: 12px; }
-    #file-list li:last-child { border-bottom: none; }
-    #file-list .icon { font-size: 20px; width: 28px; text-align: center; }
-    #file-list a { color: #0366d6; text-decoration: none; font-weight: 500; }
-    #file-list a:hover { text-decoration: underline; }
-    #file-list .size { margin-left: auto; color: #586069; font-size: 14px; }
-    .loading { padding: 20px; text-align: center; color: #586069; }
-    .error { padding: 20px; text-align: center; color: #d73a49; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мое GitHub Хранилище</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f6f8fa; color: #24292e; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(27,31,35,0.12); }
+        h1 { margin-top: 0; border-bottom: 1px solid #e1e4e8; padding-bottom: 10px; }
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .file-item:last-child { border-bottom: none; }
+        .file-name { font-weight: 500; color: #0366d6; word-break: break-all; }
+        .download-btn { background-color: #2ea44f; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 14px; white-space: nowrap; margin-left: 15px;}
+        .download-btn:hover { background-color: #2c974b; }
+        .loading { text-align: center; color: #586069; }
+        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #586069; }
+    </style>
 </head>
 <body>
-  <h1>📁 Файло</h1>
-  <div class="breadcrumb" id="breadcrumb">/</div>
-  <ul id="file-list"><li class="loading">Загрузка...</li></ul>
+    <div class="container">
+        <h1>📁 Мое файловое хранилище</h1>
+        <div id="file-list" class="loading">Загрузка файлов...</div>
+        <div class="footer">Работает на базе GitHub Pages</div>
+    </div>
 
-  <script>
-    // ---- НАСТРОЙКИ (ЗАМЕНИТЕ USERNAME) ----
-    const USERNAME = 'kompypro';         // ваше имя пользователя
-    const REPO = 'kompypro.github.io'; // название репозитория
-    const BRANCH = 'main';               // или 'master'
+    <script>
+        // ЗАМЕНИТЕ 'ВАШ_USERNAME' и 'my-storage' на свои данные!
+        const username = 'kompypro'; 
+        const repo = 'kompypro.github.io'; 
+        
+        const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/`;
 
-    // ---- ТЕКУЩИЙ ПУТЬ (хранится в URL-хеше) ----
-    let currentPath = decodeURIComponent(window.location.hash.substring(1) || '');
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('file-list');
+                list.innerHTML = '';
+                
+                if (data.message && data.message.includes("API rate limit")) {
+                    list.innerHTML = '<p style="color:red;">Превышен лимит запросов GitHub API. Попробуйте через час.</p>';
+                    return;
+                }
 
-    function updatePath(path) {
-      currentPath = path;
-      window.location.hash = encodeURIComponent(path);
-      loadContents(path);
-      updateBreadcrumb(path);
-    }
+                let filesFound = false;
+                data.forEach(file => {
+                    // Скрываем системные файлы, чтобы не мешали
+                    if (file.name === 'index.html' || file.name === 'README.md' || file.name === '.gitignore') return;
+                    
+                    filesFound = true;
+                    const div = document.createElement('div');
+                    div.className = 'file-item';
+                    
+                    // Ссылка на прямое скачивание (Raw)
+                    const rawUrl = `https://raw.githubusercontent.com/${username}/${repo}/main/${file.name}`;
+                    
+                    div.innerHTML = `
+                        <span class="file-name">${file.name}</span>
+                        <a href="${rawUrl}" class="download-btn" download>Скачать</a>
+                    `;
+                    list.appendChild(div);
+                });
 
-    function updateBreadcrumb(path) {
-      const bc = document.getElementById('breadcrumb');
-      if (!path) {
-        bc.innerHTML = '<a onclick="updatePath(\'\')">/</a>';
-        return;
-      }
-      const parts = path.split('/').filter(p => p);
-      let html = '<a onclick="updatePath(\'\')">/</a>';
-      let accumulated = '';
-      parts.forEach((part, index) => {
-        accumulated += (index === 0 ? '' : '/') + part;
-        const isLast = (index === parts.length - 1);
-        if (isLast) {
-          html += ` / ${part}`;
-        } else {
-          html += ` / <a onclick="updatePath('${accumulated}')">${part}</a>`;
-        }
-      });
-      bc.innerHTML = html;
-    }
-
-    function loadContents(path) {
-      const list = document.getElementById('file-list');
-      list.innerHTML = '<li class="loading">Загрузка...</li>';
-
-      const apiUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/${path}?ref=${BRANCH}`;
-
-      fetch(apiUrl)
-        .then(res => {
-          if (!res.ok) throw new Error(`Ошибка ${res.status}: ${res.statusText}`);
-          return res.json();
-        })
-        .then(data => {
-          list.innerHTML = '';
-          if (!Array.isArray(data)) {
-            list.innerHTML = '<li class="error">Это не папка или файл повреждён</li>';
-            return;
-          }
-
-          // Сортируем: сначала папки, потом файлы
-          const folders = data.filter(item => item.type === 'dir').sort((a,b) => a.name.localeCompare(b.name));
-          const files = data.filter(item => item.type === 'file').sort((a,b) => a.name.localeCompare(b.name));
-          const all = [...folders, ...files];
-
-          if (all.length === 0) {
-            list.innerHTML = '<li>📭 Папка пуста</li>';
-            return;
-          }
-
-          all.forEach(item => {
-            const li = document.createElement('li');
-            const iconSpan = document.createElement('span');
-            iconSpan.className = 'icon';
-            iconSpan.textContent = item.type === 'dir' ? '📁' : '📄';
-            li.appendChild(iconSpan);
-
-            const link = document.createElement('a');
-            link.textContent = item.name;
-            if (item.type === 'dir') {
-              // При клике на папку - переходим в неё
-              link.onclick = (e) => {
-                e.preventDefault();
-                const newPath = path ? path + '/' + item.name : item.name;
-                updatePath(newPath);
-              };
-              link.href = '#';
-              link.style.cursor = 'pointer';
-            } else {
-              // Файл - прямая ссылка на скачивание
-              link.href = item.download_url;
-              link.target = '_blank';
-            }
-            li.appendChild(link);
-
-            // Размер файла (если есть)
-            if (item.type === 'file' && item.size !== undefined) {
-              const sizeSpan = document.createElement('span');
-              sizeSpan.className = 'size';
-              const sizeKB = (item.size / 1024).toFixed(1);
-              sizeSpan.textContent = sizeKB >= 1024 ? (item.size / (1024*1024)).toFixed(1) + ' MB' : sizeKB + ' KB';
-              li.appendChild(sizeSpan);
-            }
-
-            list.appendChild(li);
-          });
-        })
-        .catch(err => {
-          list.innerHTML = `<li class="error">❌ Ошибка: ${err.message}</li>`;
-        });
-    }
-
-    // ---- ИНИЦИАЛИЗАЦИЯ ----
-    // При загрузке читаем путь из hash
-    window.addEventListener('load', () => {
-      const hash = window.location.hash.substring(1);
-      if (hash) {
-        currentPath = decodeURIComponent(hash);
-      }
-      updateBreadcrumb(currentPath);
-      loadContents(currentPath);
-    });
-
-    // При изменении hash (например, при нажатии "назад") - обновляем
-    window.addEventListener('hashchange', () => {
-      const newPath = decodeURIComponent(window.location.hash.substring(1) || '');
-      if (newPath !== currentPath) {
-        currentPath = newPath;
-        updateBreadcrumb(currentPath);
-        loadContents(currentPath);
-      }
-    });
-  </script>
+                if (!filesFound) {
+                    list.innerHTML = '<p>Хранилище пусто. Загрузите файлы в репозиторий!</p>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('file-list').innerHTML = '<p style="color:red;">Ошибка загрузки. Проверьте имя пользователя и репозитория в коде.</p>';
+            });
+    </script>
 </body>
 </html>
