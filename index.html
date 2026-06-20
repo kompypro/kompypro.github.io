@@ -1,73 +1,43 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мое GitHub Хранилище</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f6f8fa; color: #24292e; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(27,31,35,0.12); }
-        h1 { margin-top: 0; border-bottom: 1px solid #e1e4e8; padding-bottom: 10px; }
-        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .file-item:last-child { border-bottom: none; }
-        .file-name { font-weight: 500; color: #0366d6; word-break: break-all; }
-        .download-btn { background-color: #2ea44f; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 14px; white-space: nowrap; margin-left: 15px;}
-        .download-btn:hover { background-color: #2c974b; }
-        .loading { text-align: center; color: #586069; }
-        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #586069; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Файловое хранилище</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    a { display: block; margin: 5px 0; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📁 Мое файловое хранилище</h1>
-        <div id="file-list" class="loading">Загрузка файлов...</div>
-        <div class="footer">Работает на базе GitHub Pages</div>
-    </div>
+  <h1>📁 Список файлов</h1>
+  <div id="file-list">Загрузка...</div>
+  <script>
+    const username = 'kompypro'; // замените на своё
+    const repo = 'kompypro.github.io'; // название репозитория
+    const url = `https://api.github.com/repos/${username}/${repo}/contents/`;
 
-    <script>
-        // ЗАМЕНИТЕ 'ВАШ_USERNAME' и 'my-storage' на свои данные!
-        const username = 'kompypro'; 
-        const repo = 'kompypro.github.io'; 
-        
-        const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/`;
-
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                const list = document.getElementById('file-list');
-                list.innerHTML = '';
-                
-                if (data.message && data.message.includes("API rate limit")) {
-                    list.innerHTML = '<p style="color:red;">Превышен лимит запросов GitHub API. Попробуйте через час.</p>';
-                    return;
-                }
-
-                let filesFound = false;
-                data.forEach(file => {
-                    // Скрываем системные файлы, чтобы не мешали
-                    if (file.name === 'index.html' || file.name === 'README.md' || file.name === '.gitignore') return;
-                    
-                    filesFound = true;
-                    const div = document.createElement('div');
-                    div.className = 'file-item';
-                    
-                    // Ссылка на прямое скачивание (Raw)
-                    const rawUrl = `https://raw.githubusercontent.com/${username}/${repo}/main/${file.name}`;
-                    
-                    div.innerHTML = `
-                        <span class="file-name">${file.name}</span>
-                        <a href="${rawUrl}" class="download-btn" download>Скачать</a>
-                    `;
-                    list.appendChild(div);
-                });
-
-                if (!filesFound) {
-                    list.innerHTML = '<p>Хранилище пусто. Загрузите файлы в репозиторий!</p>';
-                }
-            })
-            .catch(error => {
-                document.getElementById('file-list').innerHTML = '<p style="color:red;">Ошибка загрузки. Проверьте имя пользователя и репозитория в коде.</p>';
-            });
-    </script>
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('file-list');
+        list.innerHTML = '';
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            if (item.type === 'file') {
+              const link = document.createElement('a');
+              link.href = item.download_url;
+              link.textContent = item.name;
+              link.target = '_blank';
+              list.appendChild(link);
+            }
+          });
+        } else {
+          list.textContent = 'Нет файлов или ошибка доступа.';
+        }
+      })
+      .catch(err => {
+        document.getElementById('file-list').textContent = 'Ошибка загрузки: ' + err;
+      });
+  </script>
 </body>
 </html>
