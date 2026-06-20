@@ -6,10 +6,12 @@
   <style>
     body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f6f8fa; }
     h1 { display: flex; align-items: center; gap: 10px; }
-    .breadcrumb { margin: 20px 0; font-size: 16px; background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .breadcrumb { margin: 20px 0; font-size: 16px; background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
     .breadcrumb a { color: #0366d6; text-decoration: none; cursor: pointer; }
     .breadcrumb a:hover { text-decoration: underline; }
-    .breadcrumb .up-icon { text-decoration: none; font-size: 18px; margin-right: 8px; }
+    .breadcrumb .home-icon { font-size: 20px; margin-right: 4px; text-decoration: none; }
+    .breadcrumb .home-icon:hover { text-decoration: none; }
+    .breadcrumb .separator { color: #586069; margin: 0 4px; }
     #file-list { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 0; list-style: none; }
     #file-list li { padding: 12px 16px; border-bottom: 1px solid #eaeef2; display: flex; align-items: center; gap: 12px; }
     #file-list li:last-child { border-bottom: none; }
@@ -24,7 +26,7 @@
 </head>
 <body>
   <h1>📁 Файловое хранилище</h1>
-  <div class="breadcrumb" id="breadcrumb">/</div>
+  <div class="breadcrumb" id="breadcrumb"></div>
   <ul id="file-list"><li class="loading">Загрузка...</li></ul>
 
   <script>
@@ -33,10 +35,9 @@
     const REPO = 'kompypro.github.io';
     const BRANCH = 'main';               // или 'master'
 
-    // ---- ТЕКУЩИЙ ПУТЬ ----
     let currentPath = decodeURIComponent(window.location.hash.substring(1) || '');
 
-    // ---- СКАЧИВАНИЕ ФАЙЛА ----
+    // ---- СКАЧИВАНИЕ ----
     function downloadFile(url, filename) {
       const list = document.getElementById('file-list');
       list.innerHTML = '<li class="loading">⏳ Скачивание ' + filename + '...</li>';
@@ -68,29 +69,55 @@
       updateBreadcrumb(path);
     }
 
-    // ---- НОВАЯ ВЕРСИЯ ХЛЕБНЫХ КРОШЕК (⬆ вместо /) ----
+    // ---- ХЛЕБНЫЕ КРОШКИ С КНОПКОЙ "ДОМОЙ" ----
     function updateBreadcrumb(path) {
       const bc = document.getElementById('breadcrumb');
-      if (!path) {
-        bc.innerHTML = '/';
-        return;
+      bc.innerHTML = '';
+
+      if (path) {
+        // Иконка дома ➔ корень
+        const homeLink = document.createElement('a');
+        homeLink.className = 'home-icon';
+        homeLink.textContent = '🏠';
+        homeLink.onclick = () => updatePath('');
+        homeLink.href = '#';
+        homeLink.title = 'В корень';
+        bc.appendChild(homeLink);
+
+        // Разделитель
+        const sep = document.createElement('span');
+        sep.className = 'separator';
+        sep.textContent = ' / ';
+        bc.appendChild(sep);
       }
+
+      // Части пути
       const parts = path.split('/').filter(p => p);
-      let html = '';
-      // Иконка возврата на родительскую папку
-      const parentPath = parts.slice(0, -1).join('/');
-      html += `<a class="up-icon" onclick="updatePath('${parentPath}')" title="На уровень выше">⬆</a>`;
-      // Ссылки на части пути
       let accumulated = '';
       parts.forEach((part, index) => {
         accumulated += (index === 0 ? '' : '/') + part;
-        if (index === 0) {
-          html += ` <a onclick="updatePath('${accumulated}')">${part}</a>`;
+        const isLast = (index === parts.length - 1);
+        if (isLast) {
+          const span = document.createElement('span');
+          span.textContent = part;
+          bc.appendChild(span);
         } else {
-          html += ` / <a onclick="updatePath('${accumulated}')">${part}</a>`;
+          const link = document.createElement('a');
+          link.textContent = part;
+          link.onclick = () => updatePath(accumulated);
+          link.href = '#';
+          bc.appendChild(link);
+          const sep2 = document.createElement('span');
+          sep2.className = 'separator';
+          sep2.textContent = ' / ';
+          bc.appendChild(sep2);
         }
       });
-      bc.innerHTML = html;
+
+      // Если путь пустой (корень) – просто показываем "/"
+      if (!path) {
+        bc.textContent = '/';
+      }
     }
 
     function loadContents(path) {
