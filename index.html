@@ -2,13 +2,14 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Bill Gilbert</title>
+  <title>Файловое хранилище</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f6f8fa; }
     h1 { display: flex; align-items: center; gap: 10px; }
     .breadcrumb { margin: 20px 0; font-size: 16px; background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .breadcrumb a { color: #0366d6; text-decoration: none; cursor: pointer; }
     .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb .up-icon { text-decoration: none; font-size: 18px; margin-right: 8px; }
     #file-list { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 0; list-style: none; }
     #file-list li { padding: 12px 16px; border-bottom: 1px solid #eaeef2; display: flex; align-items: center; gap: 12px; }
     #file-list li:last-child { border-bottom: none; }
@@ -22,7 +23,7 @@
   </style>
 </head>
 <body>
-  <h1>📁 FileHub</h1>
+  <h1>📁 Файловое хранилище</h1>
   <div class="breadcrumb" id="breadcrumb">/</div>
   <ul id="file-list"><li class="loading">Загрузка...</li></ul>
 
@@ -35,13 +36,10 @@
     // ---- ТЕКУЩИЙ ПУТЬ ----
     let currentPath = decodeURIComponent(window.location.hash.substring(1) || '');
 
-    // ---- ФУНКЦИЯ СКАЧИВАНИЯ ----
+    // ---- СКАЧИВАНИЕ ФАЙЛА ----
     function downloadFile(url, filename) {
-      // Показываем уведомление (опционально)
       const list = document.getElementById('file-list');
-      const oldHtml = list.innerHTML;
       list.innerHTML = '<li class="loading">⏳ Скачивание ' + filename + '...</li>';
-
       fetch(url)
         .then(response => {
           if (!response.ok) throw new Error('Ошибка загрузки: ' + response.status);
@@ -55,7 +53,6 @@
           link.click();
           document.body.removeChild(link);
           URL.revokeObjectURL(link.href);
-          // Восстанавливаем список после скачивания (перезагружаем текущую папку)
           loadContents(currentPath);
         })
         .catch(err => {
@@ -71,20 +68,24 @@
       updateBreadcrumb(path);
     }
 
+    // ---- НОВАЯ ВЕРСИЯ ХЛЕБНЫХ КРОШЕК (⬆ вместо /) ----
     function updateBreadcrumb(path) {
       const bc = document.getElementById('breadcrumb');
       if (!path) {
-        bc.innerHTML = '<a onclick="updatePath(\'\')">/</a>';
+        bc.innerHTML = '/';
         return;
       }
       const parts = path.split('/').filter(p => p);
-      let html = '<a onclick="updatePath(\'\')">/</a>';
+      let html = '';
+      // Иконка возврата на родительскую папку
+      const parentPath = parts.slice(0, -1).join('/');
+      html += `<a class="up-icon" onclick="updatePath('${parentPath}')" title="На уровень выше">⬆</a>`;
+      // Ссылки на части пути
       let accumulated = '';
       parts.forEach((part, index) => {
         accumulated += (index === 0 ? '' : '/') + part;
-        const isLast = (index === parts.length - 1);
-        if (isLast) {
-          html += ` / ${part}`;
+        if (index === 0) {
+          html += ` <a onclick="updatePath('${accumulated}')">${part}</a>`;
         } else {
           html += ` / <a onclick="updatePath('${accumulated}')">${part}</a>`;
         }
@@ -110,7 +111,6 @@
             return;
           }
 
-          // Сортировка: папки → файлы
           const folders = data.filter(item => item.type === 'dir').sort((a,b) => a.name.localeCompare(b.name));
           const files = data.filter(item => item.type === 'file').sort((a,b) => a.name.localeCompare(b.name));
           const all = [...folders, ...files];
@@ -138,13 +138,11 @@
               };
               link.href = '#';
             } else {
-              // ФАЙЛ -> скачивание
               link.href = '#';
               link.onclick = (e) => {
                 e.preventDefault();
                 downloadFile(item.download_url, item.name);
               };
-              // Добавляем маленькую иконку скачивания рядом
               const downloadIcon = document.createElement('span');
               downloadIcon.className = 'download-icon';
               downloadIcon.textContent = '⬇️';
@@ -153,7 +151,6 @@
 
             li.appendChild(link);
 
-            // Размер файла
             if (item.type === 'file' && item.size !== undefined) {
               const sizeSpan = document.createElement('span');
               sizeSpan.className = 'size';
