@@ -1,145 +1,305 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Файловое хранилище</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f6f8fa; }
-    h1 { display: flex; align-items: center; gap: 10px; }
-    .breadcrumb { margin: 20px 0; font-size: 16px; background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-    .breadcrumb a { color: #0366d6; text-decoration: none; cursor: pointer; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      height: 100vh;
+      display: flex;
+    }
+
+    /* ---- Боковое меню ---- */
+    .sidebar {
+      width: 240px;
+      background: #ffffff;
+      border-right: 1px solid #d0d7de;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+      overflow-y: auto;
+    }
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 600;
+      padding: 0 20px 20px;
+      border-bottom: 1px solid #d0d7de;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-title span { color: #0366d6; }
+    .sidebar-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      color: #24292e;
+      transition: background 0.15s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar-item:hover { background: #f6f8fa; }
+    .sidebar-item.active {
+      background: #f0f6ff;
+      border-left-color: #0366d6;
+      font-weight: 500;
+      color: #0366d6;
+    }
+    .sidebar-item .icon { font-size: 18px; }
+
+    /* ---- Основная область ---- */
+    .main {
+      flex: 1;
+      padding: 24px 30px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .header h1 {
+      font-weight: 600;
+      font-size: 24px;
+      color: #24292e;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header h1 small {
+      font-size: 16px;
+      font-weight: 400;
+      color: #586069;
+    }
+    .breadcrumb {
+      background: #ffffff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: 1px solid #d0d7de;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    .breadcrumb a {
+      color: #0366d6;
+      text-decoration: none;
+      cursor: pointer;
+    }
     .breadcrumb a:hover { text-decoration: underline; }
-    .breadcrumb .home-icon { font-size: 20px; margin-right: 4px; text-decoration: none; }
-    .breadcrumb .home-icon:hover { text-decoration: none; }
+    .breadcrumb .home-icon { font-size: 18px; margin-right: 4px; }
     .breadcrumb .separator { color: #586069; margin: 0 4px; }
-    #file-list { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 0; list-style: none; }
-    #file-list li { padding: 12px 16px; border-bottom: 1px solid #eaeef2; display: flex; align-items: center; gap: 12px; }
-    #file-list li:last-child { border-bottom: none; }
-    #file-list .icon { font-size: 20px; width: 28px; text-align: center; }
-    #file-list a { color: #0366d6; text-decoration: none; font-weight: 500; cursor: pointer; }
-    #file-list a:hover { text-decoration: underline; }
-    #file-list .size { margin-left: auto; color: #586069; font-size: 14px; }
-    .loading { padding: 20px; text-align: center; color: #586069; }
-    .error { padding: 20px; text-align: center; color: #d73a49; }
-    .download-icon { margin-left: 10px; font-size: 14px; color: #586069; }
+    .breadcrumb .current { color: #24292e; font-weight: 500; }
+
+    /* ---- Список файлов ---- */
+    .file-grid {
+      flex: 1;
+      overflow-y: auto;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #d0d7de;
+      padding: 0;
+      list-style: none;
+    }
+    .file-grid li {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid #eaeef2;
+      transition: background 0.1s;
+      gap: 16px;
+    }
+    .file-grid li:last-child { border-bottom: none; }
+    .file-grid li:hover { background: #f6f8fa; }
+    .file-grid .icon {
+      font-size: 20px;
+      width: 32px;
+      text-align: center;
+      color: #586069;
+    }
+    .file-grid .name {
+      flex: 1;
+      font-weight: 500;
+      color: #24292e;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .file-grid .name:hover { color: #0366d6; text-decoration: underline; }
+    .file-grid .size {
+      color: #586069;
+      font-size: 14px;
+      white-space: nowrap;
+      margin-right: 16px;
+    }
+    .file-grid .actions {
+      display: flex;
+      gap: 10px;
+    }
+    .file-grid .actions button {
+      background: none;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      color: #24292e;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .file-grid .actions button:hover {
+      background: #f0f6ff;
+      border-color: #0366d6;
+      color: #0366d6;
+    }
+    .file-grid .actions button.copy-link { border-color: #2ea44f; color: #2ea44f; }
+    .file-grid .actions button.copy-link:hover { background: #eaffea; }
+
+    /* ---- Состояния ---- */
+    .loading, .empty, .error {
+      padding: 40px 20px;
+      text-align: center;
+      color: #586069;
+    }
+    .error { color: #d73a49; }
+    .empty { color: #586069; }
+
+    /* ---- Адаптивность ---- */
+    @media (max-width: 700px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #d0d7de; flex-direction: row; overflow-x: auto; padding: 10px; }
+      .sidebar-title { display: none; }
+      .sidebar-item { padding: 8px 16px; border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+      .sidebar-item.active { border-left: none; border-bottom-color: #0366d6; }
+      .main { padding: 16px; }
+      .file-grid li { flex-wrap: wrap; gap: 8px; }
+      .file-grid .size { margin-right: 0; width: 100%; padding-left: 48px; }
+      .file-grid .actions { margin-left: 48px; }
+    }
   </style>
 </head>
 <body>
-  <h1>📁 Файловое хранилище</h1>
-  <div class="breadcrumb" id="breadcrumb"></div>
-  <ul id="file-list"><li class="loading">Загрузка...</li></ul>
+  <!-- Боковое меню -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-title">📁 <span>Разделы</span></div>
+    <div id="sidebar-list"></div>
+  </div>
+
+  <!-- Основная область -->
+  <div class="main">
+    <div class="header">
+      <h1>Файлы <small id="current-section-label">корень</small></h1>
+    </div>
+    <div class="breadcrumb" id="breadcrumb"></div>
+    <ul class="file-grid" id="file-list"><li class="loading">⏳ Загрузка...</li></ul>
+  </div>
 
   <script>
-    // ---- НАСТРОЙКИ (ЗАМЕНИТЕ USERNAME) ----
-    const USERNAME = 'kompypro';          // ваше имя пользователя
+    // --------------------------------------------------------------
+    //  НАСТРОЙКИ
+    // --------------------------------------------------------------
+    const USERNAME = 'kompypro';          // ЗАМЕНИТЕ НА СВОЁ
     const REPO = 'kompypro.github.io';
     const BRANCH = 'main';               // или 'master'
 
-    let currentPath = decodeURIComponent(window.location.hash.substring(1) || '');
+    // --------------------------------------------------------------
+    //  СОСТОЯНИЕ
+    // --------------------------------------------------------------
+    let currentPath = '';
+    let currentSection = '';
 
-    // ---- СКАЧИВАНИЕ ----
+    // --------------------------------------------------------------
+    //  ФУНКЦИИ
+    // --------------------------------------------------------------
+
     function downloadFile(url, filename) {
       const list = document.getElementById('file-list');
-      list.innerHTML = '<li class="loading">⏳ Скачивание ' + filename + '...</li>';
+      list.innerHTML = `<li class="loading">⏳ Скачивание ${filename}...</li>`;
       fetch(url)
-        .then(response => {
-          if (!response.ok) throw new Error('Ошибка загрузки: ' + response.status);
-          return response.blob();
-        })
+        .then(r => { if (!r.ok) throw new Error('Ошибка загрузки'); return r.blob(); })
         .then(blob => {
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = filename;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(link.href);
-          loadContents(currentPath);
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(a.href);
+          loadContents(currentSection, currentPath);
         })
-        .catch(err => {
-          alert('Не удалось скачать файл: ' + err.message);
-          loadContents(currentPath);
+        .catch(err => { alert('Не удалось скачать: ' + err.message); loadContents(currentSection, currentPath); });
+    }
+
+    function copyLink(fileUrl, filename) {
+      navigator.clipboard.writeText(fileUrl)
+        .then(() => alert(`Ссылка на "${filename}" скопирована!`))
+        .catch(() => {
+          const input = document.createElement('input');
+          input.value = fileUrl;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          input.remove();
+          alert(`Ссылка скопирована!`);
         });
     }
 
-    function updatePath(path) {
-      currentPath = path;
-      window.location.hash = encodeURIComponent(path);
-      loadContents(path);
-      updateBreadcrumb(path);
+    function navigateTo(section, path) {
+      currentSection = section;
+      currentPath = path || '';
+      window.location.hash = section + (path ? '/' + path : '');
+      loadContents(section, currentPath);
+      updateBreadcrumb(section, currentPath);
+      updateSidebarActive(section);
+      document.getElementById('current-section-label').textContent = section || 'корень';
     }
 
-    // ---- ХЛЕБНЫЕ КРОШКИ С КНОПКОЙ "ДОМОЙ" ----
-    function updateBreadcrumb(path) {
-      const bc = document.getElementById('breadcrumb');
-      bc.innerHTML = '';
-
-      if (path) {
-        const homeLink = document.createElement('a');
-        homeLink.className = 'home-icon';
-        homeLink.textContent = '🏠';
-        homeLink.onclick = () => updatePath('');
-        homeLink.href = '#';
-        homeLink.title = 'В корень';
-        bc.appendChild(homeLink);
-
-        const sep = document.createElement('span');
-        sep.className = 'separator';
-        sep.textContent = ' / ';
-        bc.appendChild(sep);
-      }
-
-      const parts = path.split('/').filter(p => p);
-      let accumulated = '';
-      parts.forEach((part, index) => {
-        accumulated += (index === 0 ? '' : '/') + part;
-        const isLast = (index === parts.length - 1);
-        if (isLast) {
-          const span = document.createElement('span');
-          span.textContent = part;
-          bc.appendChild(span);
-        } else {
-          const link = document.createElement('a');
-          link.textContent = part;
-          link.onclick = () => updatePath(accumulated);
-          link.href = '#';
-          bc.appendChild(link);
-          const sep2 = document.createElement('span');
-          sep2.className = 'separator';
-          sep2.textContent = ' / ';
-          bc.appendChild(sep2);
-        }
-      });
-
-      if (!path) {
-        bc.textContent = '/';
-      }
-    }
-
-    function loadContents(path) {
+    // ---- ЗАГРУЗКА СОДЕРЖИМОГО С ИСКЛЮЧЕНИЕМ index.html И README.md ----
+    function loadContents(section, path) {
       const list = document.getElementById('file-list');
       list.innerHTML = '<li class="loading">⏳ Загрузка...</li>';
 
-      const apiUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/${path}?ref=${BRANCH}`;
+      const fullPath = section ? (path ? section + '/' + path : section) : '';
+      const apiUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/${fullPath}?ref=${BRANCH}`;
 
       fetch(apiUrl)
         .then(res => {
-          if (!res.ok) throw new Error(`Ошибка ${res.status}: ${res.statusText}`);
+          if (!res.ok) throw new Error(`Ошибка ${res.status}`);
           return res.json();
         })
         .then(data => {
           list.innerHTML = '';
           if (!Array.isArray(data)) {
-            list.innerHTML = '<li class="error">Это не папка или файл повреждён</li>';
+            list.innerHTML = '<li class="error">❌ Это не папка или файл повреждён</li>';
             return;
           }
 
+          // Исключаем index.html и README.md (регистронезависимо)
+          const excludedNames = ['index.html', 'readme.md'];
           const folders = data.filter(item => item.type === 'dir').sort((a,b) => a.name.localeCompare(b.name));
-          const files = data.filter(item => item.type === 'file').sort((a,b) => a.name.localeCompare(b.name));
+          const files = data
+            .filter(item => item.type === 'file' && !excludedNames.includes(item.name.toLowerCase()))
+            .sort((a,b) => a.name.localeCompare(b.name));
           const all = [...folders, ...files];
 
           if (all.length === 0) {
-            list.innerHTML = '<li>📭 Папка пуста</li>';
+            list.innerHTML = '<li class="empty">📭 Папка пуста</li>';
             return;
           }
 
@@ -150,29 +310,25 @@
             iconSpan.textContent = item.type === 'dir' ? '📁' : '📄';
             li.appendChild(iconSpan);
 
-            const link = document.createElement('a');
-            link.textContent = item.name;
+            const nameLink = document.createElement('a');
+            nameLink.className = 'name';
+            nameLink.textContent = item.name;
 
             if (item.type === 'dir') {
-              link.onclick = (e) => {
+              nameLink.onclick = (e) => {
                 e.preventDefault();
                 const newPath = path ? path + '/' + item.name : item.name;
-                updatePath(newPath);
+                navigateTo(section, newPath);
               };
-              link.href = '#';
+              nameLink.href = '#';
             } else {
-              link.href = '#';
-              link.onclick = (e) => {
+              nameLink.href = '#';
+              nameLink.onclick = (e) => {
                 e.preventDefault();
                 downloadFile(item.download_url, item.name);
               };
-              const downloadIcon = document.createElement('span');
-              downloadIcon.className = 'download-icon';
-              downloadIcon.textContent = '⬇️';
-              li.appendChild(downloadIcon);
             }
-
-            li.appendChild(link);
+            li.appendChild(nameLink);
 
             if (item.type === 'file' && item.size !== undefined) {
               const sizeSpan = document.createElement('span');
@@ -180,6 +336,30 @@
               const sizeKB = (item.size / 1024).toFixed(1);
               sizeSpan.textContent = sizeKB >= 1024 ? (item.size / (1024*1024)).toFixed(1) + ' MB' : sizeKB + ' KB';
               li.appendChild(sizeSpan);
+            }
+
+            if (item.type === 'file') {
+              const actions = document.createElement('div');
+              actions.className = 'actions';
+
+              const dlBtn = document.createElement('button');
+              dlBtn.innerHTML = '⬇️ Скачать';
+              dlBtn.onclick = (e) => {
+                e.stopPropagation();
+                downloadFile(item.download_url, item.name);
+              };
+              actions.appendChild(dlBtn);
+
+              const copyBtn = document.createElement('button');
+              copyBtn.className = 'copy-link';
+              copyBtn.innerHTML = '🔗 Ссылка';
+              copyBtn.onclick = (e) => {
+                e.stopPropagation();
+                copyLink(item.download_url, item.name);
+              };
+              actions.appendChild(copyBtn);
+
+              li.appendChild(actions);
             }
 
             list.appendChild(li);
@@ -190,22 +370,133 @@
         });
     }
 
+    // ---- ХЛЕБНЫЕ КРОШКИ ----
+    function updateBreadcrumb(section, path) {
+      const bc = document.getElementById('breadcrumb');
+      bc.innerHTML = '';
+
+      if (section) {
+        const home = document.createElement('a');
+        home.className = 'home-icon';
+        home.textContent = '🏠';
+        home.onclick = () => { navigateTo('', ''); };
+        home.href = '#';
+        home.title = 'В корень';
+        bc.appendChild(home);
+        const sep = document.createElement('span');
+        sep.className = 'separator';
+        sep.textContent = ' / ';
+        bc.appendChild(sep);
+
+        const sectionLink = document.createElement('a');
+        sectionLink.textContent = section;
+        sectionLink.onclick = () => { navigateTo(section, ''); };
+        sectionLink.href = '#';
+        bc.appendChild(sectionLink);
+      } else {
+        bc.textContent = '/';
+        return;
+      }
+
+      if (path) {
+        const parts = path.split('/').filter(p => p);
+        let accumulated = '';
+        parts.forEach((part, index) => {
+          const sep2 = document.createElement('span');
+          sep2.className = 'separator';
+          sep2.textContent = ' / ';
+          bc.appendChild(sep2);
+          accumulated += (index === 0 ? '' : '/') + part;
+          const isLast = (index === parts.length - 1);
+          if (isLast) {
+            const span = document.createElement('span');
+            span.className = 'current';
+            span.textContent = part;
+            bc.appendChild(span);
+          } else {
+            const link = document.createElement('a');
+            link.textContent = part;
+            link.onclick = () => { navigateTo(section, accumulated); };
+            link.href = '#';
+            bc.appendChild(link);
+          }
+        });
+      }
+    }
+
+    // ---- ПОДСВЕТКА АКТИВНОГО РАЗДЕЛА ----
+    function updateSidebarActive(section) {
+      document.querySelectorAll('.sidebar-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.section === section);
+      });
+    }
+
+    // ---- ЗАГРУЗКА РАЗДЕЛОВ (ПАПОК В КОРНЕ) ----
+    function loadSections() {
+      const sidebarList = document.getElementById('sidebar-list');
+      sidebarList.innerHTML = '<div class="sidebar-item" style="cursor:default;color:#586069;">Загрузка...</div>';
+
+      const url = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/?ref=${BRANCH}`;
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          sidebarList.innerHTML = '';
+          const dirs = data.filter(item => item.type === 'dir').sort((a,b) => a.name.localeCompare(b.name));
+
+          const rootItem = document.createElement('div');
+          rootItem.className = 'sidebar-item';
+          rootItem.dataset.section = '';
+          rootItem.innerHTML = '<span class="icon">📂</span> Все файлы';
+          rootItem.onclick = () => { navigateTo('', ''); };
+          sidebarList.appendChild(rootItem);
+
+          dirs.forEach(dir => {
+            const item = document.createElement('div');
+            item.className = 'sidebar-item';
+            item.dataset.section = dir.name;
+            item.innerHTML = `<span class="icon">📁</span> ${dir.name}`;
+            item.onclick = () => { navigateTo(dir.name, ''); };
+            sidebarList.appendChild(item);
+          });
+
+          if (currentSection) updateSidebarActive(currentSection);
+          else updateSidebarActive('');
+        })
+        .catch(err => {
+          sidebarList.innerHTML = `<div class="sidebar-item" style="color:#d73a49;">Ошибка загрузки разделов</div>`;
+        });
+    }
+
     // ---- ИНИЦИАЛИЗАЦИЯ ----
-    window.addEventListener('load', () => {
+    function init() {
       const hash = window.location.hash.substring(1);
-      if (hash) currentPath = decodeURIComponent(hash);
-      updateBreadcrumb(currentPath);
-      loadContents(currentPath);
-    });
+      if (hash) {
+        const parts = hash.split('/');
+        const sec = parts[0] || '';
+        const p = parts.slice(1).join('/');
+        currentSection = sec;
+        currentPath = p;
+      }
+      loadSections();
+      navigateTo(currentSection, currentPath);
+    }
 
     window.addEventListener('hashchange', () => {
-      const newPath = decodeURIComponent(window.location.hash.substring(1) || '');
-      if (newPath !== currentPath) {
-        currentPath = newPath;
-        updateBreadcrumb(currentPath);
-        loadContents(currentPath);
+      const hash = window.location.hash.substring(1);
+      const parts = hash.split('/');
+      const sec = parts[0] || '';
+      const p = parts.slice(1).join('/');
+      if (sec !== currentSection || p !== currentPath) {
+        currentSection = sec;
+        currentPath = p;
+        loadContents(currentSection, currentPath);
+        updateBreadcrumb(currentSection, currentPath);
+        updateSidebarActive(currentSection);
+        document.getElementById('current-section-label').textContent = currentSection || 'корень';
       }
     });
+
+    init();
   </script>
 </body>
 </html>
