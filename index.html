@@ -4,40 +4,188 @@
   <meta charset="UTF-8">
   <title>Файловое хранилище</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    a { display: block; margin: 5px 0; }
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f6f8fa; }
+    h1 { display: flex; align-items: center; gap: 10px; }
+    .breadcrumb { margin: 20px 0; font-size: 16px; background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .breadcrumb a { color: #0366d6; text-decoration: none; cursor: pointer; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    #file-list { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 0; list-style: none; }
+    #file-list li { padding: 12px 16px; border-bottom: 1px solid #eaeef2; display: flex; align-items: center; gap: 12px; }
+    #file-list li:last-child { border-bottom: none; }
+    #file-list .icon { font-size: 20px; width: 28px; text-align: center; }
+    #file-list a { color: #0366d6; text-decoration: none; font-weight: 500; cursor: pointer; }
+    #file-list a:hover { text-decoration: underline; }
+    #file-list .size { margin-left: auto; color: #586069; font-size: 14px; }
+    .loading { padding: 20px; text-align: center; color: #586069; }
+    .error { padding: 20px; text-align: center; color: #d73a49; }
+    .download-icon { margin-left: 10px; font-size: 14px; color: #586069; }
   </style>
 </head>
 <body>
-  <h1>📁 Список файлов</h1>
-  <div id="file-list">Загрузка...</div>
-  <script>
-    const username = 'kompypro'; // замените на своё
-    const repo = 'kompypro.github.io'; // название репозитория
-    const url = `https://api.github.com/repos/${username}/${repo}/contents/`;
+  <h1>📁 Файловое хранилище</h1>
+  <div class="breadcrumb" id="breadcrumb">/</div>
+  <ul id="file-list"><li class="loading">Загрузка...</li></ul>
 
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        const list = document.getElementById('file-list');
-        list.innerHTML = '';
-        if (Array.isArray(data)) {
-          data.forEach(item => {
-            if (item.type === 'file') {
-              const link = document.createElement('a');
-              link.href = item.download_url;
-              link.textContent = item.name;
-              link.target = '_blank';
-              list.appendChild(link);
-            }
-          });
+  <script>
+    // ---- НАСТРОЙКИ (ЗАМЕНИТЕ USERNAME) ----
+    const USERNAME = 'USERNAME';          // ваше имя пользователя
+    const REPO = USERNAME + '.github.io';
+    const BRANCH = 'main';               // или 'master'
+
+    // ---- ТЕКУЩИЙ ПУТЬ ----
+    let currentPath = decodeURIComponent(window.location.hash.substring(1) || '');
+
+    // ---- ФУНКЦИЯ СКАЧИВАНИЯ ----
+    function downloadFile(url, filename) {
+      // Показываем уведомление (опционально)
+      const list = document.getElementById('file-list');
+      const oldHtml = list.innerHTML;
+      list.innerHTML = '<li class="loading">⏳ Скачивание ' + filename + '...</li>';
+
+      fetch(url)
+        .then(response => {
+          if (!response.ok) throw new Error('Ошибка загрузки: ' + response.status);
+          return response.blob();
+        })
+        .then(blob => {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(link.href);
+          // Восстанавливаем список после скачивания (перезагружаем текущую папку)
+          loadContents(currentPath);
+        })
+        .catch(err => {
+          alert('Не удалось скачать файл: ' + err.message);
+          loadContents(currentPath);
+        });
+    }
+
+    function updatePath(path) {
+      currentPath = path;
+      window.location.hash = encodeURIComponent(path);
+      loadContents(path);
+      updateBreadcrumb(path);
+    }
+
+    function updateBreadcrumb(path) {
+      const bc = document.getElementById('breadcrumb');
+      if (!path) {
+        bc.innerHTML = '<a onclick="updatePath(\'\')">/</a>';
+        return;
+      }
+      const parts = path.split('/').filter(p => p);
+      let html = '<a onclick="updatePath(\'\')">/</a>';
+      let accumulated = '';
+      parts.forEach((part, index) => {
+        accumulated += (index === 0 ? '' : '/') + part;
+        const isLast = (index === parts.length - 1);
+        if (isLast) {
+          html += ` / ${part}`;
         } else {
-          list.textContent = 'Нет файлов или ошибка доступа.';
+          html += ` / <a onclick="updatePath('${accumulated}')">${part}</a>`;
         }
-      })
-      .catch(err => {
-        document.getElementById('file-list').textContent = 'Ошибка загрузки: ' + err;
       });
+      bc.innerHTML = html;
+    }
+
+    function loadContents(path) {
+      const list = document.getElementById('file-list');
+      list.innerHTML = '<li class="loading">⏳ Загрузка...</li>';
+
+      const apiUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/${path}?ref=${BRANCH}`;
+
+      fetch(apiUrl)
+        .then(res => {
+          if (!res.ok) throw new Error(`Ошибка ${res.status}: ${res.statusText}`);
+          return res.json();
+        })
+        .then(data => {
+          list.innerHTML = '';
+          if (!Array.isArray(data)) {
+            list.innerHTML = '<li class="error">Это не папка или файл повреждён</li>';
+            return;
+          }
+
+          // Сортировка: папки → файлы
+          const folders = data.filter(item => item.type === 'dir').sort((a,b) => a.name.localeCompare(b.name));
+          const files = data.filter(item => item.type === 'file').sort((a,b) => a.name.localeCompare(b.name));
+          const all = [...folders, ...files];
+
+          if (all.length === 0) {
+            list.innerHTML = '<li>📭 Папка пуста</li>';
+            return;
+          }
+
+          all.forEach(item => {
+            const li = document.createElement('li');
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'icon';
+            iconSpan.textContent = item.type === 'dir' ? '📁' : '📄';
+            li.appendChild(iconSpan);
+
+            const link = document.createElement('a');
+            link.textContent = item.name;
+
+            if (item.type === 'dir') {
+              link.onclick = (e) => {
+                e.preventDefault();
+                const newPath = path ? path + '/' + item.name : item.name;
+                updatePath(newPath);
+              };
+              link.href = '#';
+            } else {
+              // ФАЙЛ -> скачивание
+              link.href = '#';
+              link.onclick = (e) => {
+                e.preventDefault();
+                downloadFile(item.download_url, item.name);
+              };
+              // Добавляем маленькую иконку скачивания рядом
+              const downloadIcon = document.createElement('span');
+              downloadIcon.className = 'download-icon';
+              downloadIcon.textContent = '⬇️';
+              li.appendChild(downloadIcon);
+            }
+
+            li.appendChild(link);
+
+            // Размер файла
+            if (item.type === 'file' && item.size !== undefined) {
+              const sizeSpan = document.createElement('span');
+              sizeSpan.className = 'size';
+              const sizeKB = (item.size / 1024).toFixed(1);
+              sizeSpan.textContent = sizeKB >= 1024 ? (item.size / (1024*1024)).toFixed(1) + ' MB' : sizeKB + ' KB';
+              li.appendChild(sizeSpan);
+            }
+
+            list.appendChild(li);
+          });
+        })
+        .catch(err => {
+          list.innerHTML = `<li class="error">❌ Ошибка: ${err.message}</li>`;
+        });
+    }
+
+    // ---- ИНИЦИАЛИЗАЦИЯ ----
+    window.addEventListener('load', () => {
+      const hash = window.location.hash.substring(1);
+      if (hash) currentPath = decodeURIComponent(hash);
+      updateBreadcrumb(currentPath);
+      loadContents(currentPath);
+    });
+
+    window.addEventListener('hashchange', () => {
+      const newPath = decodeURIComponent(window.location.hash.substring(1) || '');
+      if (newPath !== currentPath) {
+        currentPath = newPath;
+        updateBreadcrumb(currentPath);
+        loadContents(currentPath);
+      }
+    });
   </script>
 </body>
 </html>
