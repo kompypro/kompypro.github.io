@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>KompyPro</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    a { display: block; margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <h1>📁 File list</h1>
+  <div id="file-list">Загрузка...</div>
+  <script>
+    const username = 'kompypro'; // замените на своё
+    const repo = 'kompypro.github.io'; // название репозитория
+    const url = `https://api.github.com/repos/${username}/${repo}/contents/`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('file-list');
+        list.innerHTML = '';
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            if (item.type === 'file') {
+              const link = document.createElement('a');
+              link.href = item.download_url;
+              link.textContent = item.name;
+              link.target = '_blank';
+              list.appendChild(link);
+            }
+          });
+        } else {
+          list.textContent = 'Нет файлов или ошибка доступа.';
+        }
+      })
+      .catch(err => {
+        document.getElementById('file-list').textContent = 'Ошибка загрузки: ' + err;
+      });
+  </script>
+</body>
+</html>
