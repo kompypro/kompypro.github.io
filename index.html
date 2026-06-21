@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КомптПро Файлы</title>
-  <!-- Подключаем Font Awesome для иконок -->
+  <title>КомпыПро Файлы</title>
+  <!-- Подключаем Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* ============================================================
-       ПЕРЕМЕННЫЕ (можно менять цвета под себя)
-       ============================================================ */
+    /* ===== Все стили остаются как были ===== */
     :root {
       --bg-body: #0d1117;
       --bg-card: #161b22;
@@ -32,9 +30,6 @@
       flex-direction: column;
     }
 
-    /* ============================================================
-       ШАПКА (графическая, как в ВК)
-       ============================================================ */
     .profile-header {
       position: relative;
       background: linear-gradient(135deg, #1e2a3a 0%, #2d3b4f 100%);
@@ -103,53 +98,23 @@
       background: #3fb950;
       margin-right: 4px;
     }
+
+    /* Убрали кнопки, оставили только счётчик */
     .profile-header .actions {
       display: flex;
-      gap: 12px;
       align-items: center;
-      flex-wrap: wrap;
-    }
-    .profile-header .actions button {
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: #fff;
-      padding: 8px 18px;
-      border-radius: 30px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      backdrop-filter: blur(4px);
-    }
-    .profile-header .actions button:hover {
-      background: rgba(255,255,255,0.25);
-    }
-    .profile-header .actions button.primary {
-      background: var(--text-accent);
-      border-color: var(--text-accent);
-      color: #fff;
-    }
-    .profile-header .actions button.primary:hover {
-      background: #79c0ff;
-      border-color: #79c0ff;
     }
     .profile-header .file-count {
       color: rgba(255,255,255,0.8);
       font-size: 14px;
-      margin-left: 8px;
     }
 
-    /* ============================================================
-       ОСНОВНАЯ ЧАСТЬ (файловый менеджер)
-       ============================================================ */
+    /* Остальные стили (меню, список, адаптив) – без изменений */
     .main-layout {
       display: flex;
       flex: 1;
       overflow: hidden;
     }
-
     .sidebar {
       width: 240px;
       background: var(--bg-card);
@@ -222,7 +187,6 @@
     .breadcrumb .separator { color: var(--text-secondary); margin: 0 4px; }
     .breadcrumb .current { color: var(--text-primary); font-weight: 500; }
 
-    /* Список файлов – каждая строка кликабельна */
     .file-grid {
       flex: 1;
       overflow-y: auto;
@@ -240,7 +204,7 @@
       border-bottom: 1px solid var(--border-color);
       transition: background 0.15s;
       gap: 16px;
-      cursor: pointer;         /* теперь вся строка кликабельна */
+      cursor: pointer;
     }
     .file-grid li:last-child { border-bottom: none; }
     .file-grid li:hover { background: #1c2333; }
@@ -256,7 +220,7 @@
       font-weight: 500;
       color: var(--text-primary);
       text-decoration: none;
-      pointer-events: none;   /* чтобы клик по названию не перехватывался отдельно */
+      pointer-events: none;
     }
     .file-grid li .size {
       color: var(--text-secondary);
@@ -267,7 +231,7 @@
     .file-grid li .actions {
       display: flex;
       gap: 10px;
-      pointer-events: auto;   /* кнопки остаются кликабельными */
+      pointer-events: auto;
     }
     .file-grid li .actions button {
       background: transparent;
@@ -304,7 +268,6 @@
     }
     .error { color: #f85149; }
 
-    /* ===== АДАПТИВ ===== */
     @media (max-width: 700px) {
       .profile-header { padding: 20px 16px; }
       .profile-header .cover { flex-direction: column; align-items: center; text-align: center; }
@@ -338,36 +301,26 @@
 </head>
 <body>
 
-  <!-- =============================================================
-       ШАПКА (с аватаркой, обложкой, кнопками)
-       ============================================================= -->
   <header class="profile-header">
     <div class="cover">
       <div class="avatar">
-        <!-- 
-          👇 ЗАМЕНИТЕ ССЫЛКУ НА СВОЮ АВАТАРКУ
-          Если картинки нет – будут показаны инициалы (КП)
-        -->
+        <!-- Замените ссылку на свою аватарку или используйте инициалы -->
         <img src="https://avatars.githubusercontent.com/ваш-логин" alt="Аватар" />
         <!-- <div class="initials">КП</div> -->
       </div>
       <div class="info">
-        <h1>КомптПро</h1>
+        <h1>КомпыПро</h1>
         <div class="status">
           <span class="dot"></span> В сети · Хранилище файлов
         </div>
       </div>
       <div class="actions">
-        <button class="primary">➕ Загрузить</button>
-        <button>🔗 Поделиться</button>
+        <!-- Кнопки "Загрузить" и "Поделиться" УДАЛЕНЫ -->
         <span class="file-count">📂 <span id="file-counter">0</span> файлов</span>
       </div>
     </div>
   </header>
 
-  <!-- =============================================================
-       ОСНОВНАЯ ЧАСТЬ
-       ============================================================= -->
   <div class="main-layout">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-title">Разделы</div>
@@ -389,13 +342,12 @@
     const BRANCH = 'main';                // или 'master'
 
     // ----------------------------------------------------------------
-    //  ОСТАЛЬНОЙ КОД (не трогайте, если не уверены)
+    //  ВЕСЬ ОСТАЛЬНОЙ КОД (без изменений)
     // ----------------------------------------------------------------
 
     let currentPath = '';
     let currentSection = '';
 
-    // ---- Определяем иконку для файла по расширению ----
     function getFileIcon(filename) {
       const ext = filename.split('.').pop().toLowerCase();
       const map = {
@@ -435,10 +387,9 @@
         'exe': 'fa-file',
         'msi': 'fa-file',
       };
-      return map[ext] || 'fa-file';  // по умолчанию – дискета (или стандартный файл)
+      return map[ext] || 'fa-file';
     }
 
-    // ---- Скачивание файла ----
     function downloadFile(url, filename) {
       const list = document.getElementById('file-list');
       list.innerHTML = `<li class="loading">⏳ Скачивание ${filename}...</li>`;
@@ -457,7 +408,6 @@
         .catch(err => { alert('Не удалось скачать: ' + err.message); loadContents(currentSection, currentPath); });
     }
 
-    // ---- Копирование ссылки ----
     function copyLink(fileUrl, filename) {
       navigator.clipboard.writeText(fileUrl)
         .then(() => alert(`Ссылка на "${filename}" скопирована!`))
@@ -472,7 +422,6 @@
         });
     }
 
-    // ---- Навигация ----
     function navigateTo(section, path) {
       currentSection = section;
       currentPath = path || '';
@@ -482,7 +431,6 @@
       updateSidebarActive(section);
     }
 
-    // ---- Загрузка содержимого папки ----
     function loadContents(section, path) {
       const list = document.getElementById('file-list');
       list.innerHTML = '<li class="loading">⏳ Загрузка...</li>';
@@ -519,7 +467,6 @@
           all.forEach(item => {
             const li = document.createElement('li');
 
-            // Иконка
             const iconSpan = document.createElement('span');
             iconSpan.className = 'icon';
             if (item.type === 'dir') {
@@ -530,13 +477,11 @@
             }
             li.appendChild(iconSpan);
 
-            // Название
             const nameSpan = document.createElement('span');
             nameSpan.className = 'name';
             nameSpan.textContent = item.name;
             li.appendChild(nameSpan);
 
-            // Размер (для файлов)
             if (item.type === 'file' && item.size !== undefined) {
               const sizeSpan = document.createElement('span');
               sizeSpan.className = 'size';
@@ -545,7 +490,6 @@
               li.appendChild(sizeSpan);
             }
 
-            // Действия (только для файлов)
             if (item.type === 'file') {
               const actions = document.createElement('div');
               actions.className = 'actions';
@@ -570,15 +514,12 @@
               li.appendChild(actions);
             }
 
-            // ---- КЛИК ПО ВСЕЙ СТРОКЕ ----
             li.onclick = (e) => {
-              // Если кликнули по кнопке – не обрабатываем (у них уже свой обработчик)
               if (e.target.closest('button')) return;
               if (item.type === 'dir') {
                 const newPath = path ? path + '/' + item.name : item.name;
                 navigateTo(section, newPath);
               } else {
-                // Для файлов – скачиваем (или можно открывать, но мы скачиваем)
                 downloadFile(item.download_url, item.name);
               }
             };
@@ -591,7 +532,6 @@
         });
     }
 
-    // ---- Хлебные крошки ----
     function updateBreadcrumb(section, path) {
       const bc = document.getElementById('breadcrumb');
       bc.innerHTML = '';
@@ -645,14 +585,12 @@
       }
     }
 
-    // ---- Подсветка в боковом меню ----
     function updateSidebarActive(section) {
       document.querySelectorAll('.sidebar-item').forEach(el => {
         el.classList.toggle('active', el.dataset.section === section);
       });
     }
 
-    // ---- Загрузка разделов (папок в корне) ----
     function loadSections() {
       const sidebarList = document.getElementById('sidebar-list');
       sidebarList.innerHTML = '<div class="sidebar-item" style="cursor:default;color:var(--text-secondary);">Загрузка...</div>';
@@ -688,7 +626,6 @@
         });
     }
 
-    // ---- Инициализация ----
     function init() {
       const hash = window.location.hash.substring(1);
       if (hash) {
