@@ -4,10 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>КомпыПро</title>
-  <!-- Подключаем Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* ===== Все стили остаются как были ===== */
+    /* ===== ВСЕ СТИЛИ (без изменений) ===== */
     :root {
       --bg-body: #0d1117;
       --bg-card: #161b22;
@@ -18,9 +17,7 @@
       --radius: 12px;
       --shadow: 0 8px 24px rgba(0,0,0,0.6);
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
       background: var(--bg-body);
@@ -29,7 +26,6 @@
       display: flex;
       flex-direction: column;
     }
-
     .profile-header {
       position: relative;
       background: linear-gradient(135deg, #1e2a3a 0%, #2d3b4f 100%);
@@ -98,8 +94,6 @@
       background: #3fb950;
       margin-right: 4px;
     }
-
-    /* Убрали кнопки, оставили только счётчик */
     .profile-header .actions {
       display: flex;
       align-items: center;
@@ -108,8 +102,6 @@
       color: rgba(255,255,255,0.8);
       font-size: 14px;
     }
-
-    /* Остальные стили (меню, список, адаптив) – без изменений */
     .main-layout {
       display: flex;
       flex: 1;
@@ -154,7 +146,6 @@
       color: var(--text-accent);
     }
     .sidebar-item .icon { font-size: 18px; }
-
     .main-content {
       flex: 1;
       padding: 20px 28px;
@@ -163,7 +154,6 @@
       overflow: hidden;
       background: var(--bg-body);
     }
-
     .breadcrumb {
       background: var(--bg-card);
       padding: 10px 18px;
@@ -186,7 +176,6 @@
     .breadcrumb .home-icon { font-size: 18px; margin-right: 4px; }
     .breadcrumb .separator { color: var(--text-secondary); margin: 0 4px; }
     .breadcrumb .current { color: var(--text-primary); font-weight: 500; }
-
     .file-grid {
       flex: 1;
       overflow-y: auto;
@@ -260,14 +249,12 @@
       border-color: #2ea44f;
       color: #4cda64;
     }
-
     .loading, .empty, .error {
       padding: 40px 20px;
       text-align: center;
       color: var(--text-secondary);
     }
     .error { color: #f85149; }
-
     @media (max-width: 700px) {
       .profile-header { padding: 20px 16px; }
       .profile-header .cover { flex-direction: column; align-items: center; text-align: center; }
@@ -300,11 +287,9 @@
   </style>
 </head>
 <body>
-
   <header class="profile-header">
     <div class="cover">
       <div class="avatar">
-        <!-- Замените ссылку на свою аватарку или используйте инициалы -->
         <img src="https://avatars.githubusercontent.com/kompypro" alt="КомпыПро" />
         <!-- <div class="initials">КП</div> -->
       </div>
@@ -315,7 +300,6 @@
         </div>
       </div>
       <div class="actions">
-        <!-- Кнопки "Загрузить" и "Поделиться" УДАЛЕНЫ -->
         <span class="file-count">📂 <span id="file-counter">0</span> файлов</span>
       </div>
     </div>
@@ -326,7 +310,6 @@
       <div class="sidebar-title">Разделы</div>
       <div id="sidebar-list"></div>
     </aside>
-
     <main class="main-content">
       <div class="breadcrumb" id="breadcrumb"></div>
       <ul class="file-grid" id="file-list"><li class="loading">⏳ Загрузка...</li></ul>
@@ -335,19 +318,20 @@
 
   <script>
     // ================================================================
-    //  НАСТРОЙКИ (поменяйте только USERNAME)
+    //  НАСТРОЙКИ
     // ================================================================
     const USERNAME = 'kompypro';          // 👈 ваш логин
     const REPO = 'kompypro.github.io';
     const BRANCH = 'main';                // или 'master'
 
     // ----------------------------------------------------------------
-    //  ВЕСЬ ОСТАЛЬНОЙ КОД (без изменений)
+    //  КОД С ПОДДЕРЖКОЙ .url ФАЙЛОВ
     // ----------------------------------------------------------------
 
     let currentPath = '';
     let currentSection = '';
 
+    // ---- Иконка для файла (для .url – глобус) ----
     function getFileIcon(filename) {
       const ext = filename.split('.').pop().toLowerCase();
       const map = {
@@ -386,10 +370,12 @@
         'cpp': 'fa-file-code',
         'exe': 'fa-file',
         'msi': 'fa-file',
+        'url': 'fa-globe'     // 👈 глобус для .url файлов
       };
       return map[ext] || 'fa-file';
     }
 
+    // ---- Скачивание (для всех файлов, включая .url) ----
     function downloadFile(url, filename) {
       const list = document.getElementById('file-list');
       list.innerHTML = `<li class="loading">⏳ Скачивание ${filename}...</li>`;
@@ -408,6 +394,7 @@
         .catch(err => { alert('Не удалось скачать: ' + err.message); loadContents(currentSection, currentPath); });
     }
 
+    // ---- Копирование ссылки ----
     function copyLink(fileUrl, filename) {
       navigator.clipboard.writeText(fileUrl)
         .then(() => alert(`Ссылка на "${filename}" скопирована!`))
@@ -422,6 +409,7 @@
         });
     }
 
+    // ---- Навигация ----
     function navigateTo(section, path) {
       currentSection = section;
       currentPath = path || '';
@@ -431,6 +419,7 @@
       updateSidebarActive(section);
     }
 
+    // ---- Загрузка содержимого ----
     function loadContents(section, path) {
       const list = document.getElementById('file-list');
       list.innerHTML = '<li class="loading">⏳ Загрузка...</li>';
@@ -514,12 +503,38 @@
               li.appendChild(actions);
             }
 
+            // ---- ОБРАБОТКА КЛИКА ----
             li.onclick = (e) => {
               if (e.target.closest('button')) return;
               if (item.type === 'dir') {
                 const newPath = path ? path + '/' + item.name : item.name;
                 navigateTo(section, newPath);
               } else {
+                // Проверяем расширение .url
+                const ext = item.name.split('.').pop().toLowerCase();
+                if (ext === 'url') {
+                  // Читаем содержимое файла и открываем первую строку как URL
+                  list.innerHTML = `<li class="loading">⏳ Открытие ссылки...</li>`;
+                  fetch(item.download_url)
+                    .then(res => res.text())
+                    .then(text => {
+                      // Извлекаем первую непустую строку
+                      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                      const url = lines[0];
+                      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                        window.open(url, '_blank');
+                      } else {
+                        alert('Файл .url не содержит корректного URL (должен начинаться с http:// или https://)');
+                      }
+                      loadContents(currentSection, currentPath); // обновляем список
+                    })
+                    .catch(err => {
+                      alert('Ошибка чтения .url файла: ' + err.message);
+                      loadContents(currentSection, currentPath);
+                    });
+                  return;
+                }
+                // Все остальные файлы – скачиваем
                 downloadFile(item.download_url, item.name);
               }
             };
@@ -532,10 +547,10 @@
         });
     }
 
+    // ---- Хлебные крошки (без изменений) ----
     function updateBreadcrumb(section, path) {
       const bc = document.getElementById('breadcrumb');
       bc.innerHTML = '';
-
       if (section) {
         const home = document.createElement('a');
         home.className = 'home-icon';
@@ -548,7 +563,6 @@
         sep.className = 'separator';
         sep.textContent = ' / ';
         bc.appendChild(sep);
-
         const sectionLink = document.createElement('a');
         sectionLink.textContent = section;
         sectionLink.onclick = () => { navigateTo(section, ''); };
@@ -558,7 +572,6 @@
         bc.textContent = '/';
         return;
       }
-
       if (path) {
         const parts = path.split('/').filter(p => p);
         let accumulated = '';
@@ -594,21 +607,18 @@
     function loadSections() {
       const sidebarList = document.getElementById('sidebar-list');
       sidebarList.innerHTML = '<div class="sidebar-item" style="cursor:default;color:var(--text-secondary);">Загрузка...</div>';
-
       const url = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/?ref=${BRANCH}`;
       fetch(url)
         .then(res => res.json())
         .then(data => {
           sidebarList.innerHTML = '';
           const dirs = data.filter(item => item.type === 'dir').sort((a,b) => a.name.localeCompare(b.name));
-
           const rootItem = document.createElement('div');
           rootItem.className = 'sidebar-item';
           rootItem.dataset.section = '';
           rootItem.innerHTML = '<span class="icon"><i class="fas fa-folder-open"></i></span> Все файлы';
           rootItem.onclick = () => { navigateTo('', ''); };
           sidebarList.appendChild(rootItem);
-
           dirs.forEach(dir => {
             const item = document.createElement('div');
             item.className = 'sidebar-item';
@@ -617,7 +627,6 @@
             item.onclick = () => { navigateTo(dir.name, ''); };
             sidebarList.appendChild(item);
           });
-
           if (currentSection) updateSidebarActive(currentSection);
           else updateSidebarActive('');
         })
