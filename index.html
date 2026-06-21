@@ -3,116 +3,233 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Файловое хранилище</title>
+  <title>КомптПро Файлы</title>
+  <!-- Подключаем Font Awesome для иконок -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f0f2f5;
-      height: 100vh;
-      display: flex;
+    /* ============================================================
+       ПЕРЕМЕННЫЕ (можно менять цвета под себя)
+       ============================================================ */
+    :root {
+      --bg-body: #0d1117;
+      --bg-card: #161b22;
+      --border-color: #30363d;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-accent: #58a6ff;
+      --radius: 12px;
+      --shadow: 0 8px 24px rgba(0,0,0,0.6);
     }
 
-    /* ---- Боковое меню ---- */
-    .sidebar {
-      width: 240px;
-      background: #ffffff;
-      border-right: 1px solid #d0d7de;
-      padding: 20px 0;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      box-shadow: 2px 0 8px rgba(0,0,0,0.05);
-      overflow-y: auto;
     }
-    .sidebar-title {
-      font-size: 18px;
-      font-weight: 600;
-      padding: 0 20px 20px;
-      border-bottom: 1px solid #d0d7de;
-      margin-bottom: 16px;
+
+    /* ============================================================
+       ШАПКА (графическая, как в ВК)
+       ============================================================ */
+    .profile-header {
+      position: relative;
+      background: linear-gradient(135deg, #1e2a3a 0%, #2d3b4f 100%);
+      padding: 40px 30px 20px 30px;
+      border-bottom: 2px solid var(--border-color);
+      flex-shrink: 0;
+    }
+    .profile-header .cover {
+      display: flex;
+      align-items: flex-end;
+      gap: 24px;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .profile-header .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      background: #fff;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    }
+    .profile-header .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .profile-header .avatar .initials {
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      font-size: 40px;
+      font-weight: 700;
+      color: #1e2a3a;
+      background: #e6edf3;
     }
-    .sidebar-title span { color: #0366d6; }
+    .profile-header .info {
+      flex: 1;
+      min-width: 200px;
+    }
+    .profile-header .info h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+    .profile-header .info .status {
+      font-size: 16px;
+      color: rgba(255,255,255,0.7);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .profile-header .info .status .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #3fb950;
+      margin-right: 4px;
+    }
+    .profile-header .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .profile-header .actions button {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(4px);
+    }
+    .profile-header .actions button:hover {
+      background: rgba(255,255,255,0.25);
+    }
+    .profile-header .actions button.primary {
+      background: var(--text-accent);
+      border-color: var(--text-accent);
+      color: #fff;
+    }
+    .profile-header .actions button.primary:hover {
+      background: #79c0ff;
+      border-color: #79c0ff;
+    }
+    .profile-header .file-count {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+      margin-left: 8px;
+    }
+
+    /* ============================================================
+       ОСНОВНАЯ ЧАСТЬ (файловый менеджер)
+       ============================================================ */
+    .main-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 240px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-color);
+      padding: 16px 0;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      padding: 0 20px 14px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
     .sidebar-item {
-      padding: 12px 20px;
+      padding: 10px 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 12px;
       font-size: 15px;
-      color: #24292e;
-      transition: background 0.15s;
+      color: var(--text-primary);
+      transition: background 0.2s, border-color 0.2s;
       border-left: 3px solid transparent;
     }
-    .sidebar-item:hover { background: #f6f8fa; }
+    .sidebar-item:hover { background: #1c2333; }
     .sidebar-item.active {
-      background: #f0f6ff;
-      border-left-color: #0366d6;
+      background: #1f2937;
+      border-left-color: var(--text-accent);
       font-weight: 500;
-      color: #0366d6;
+      color: var(--text-accent);
     }
     .sidebar-item .icon { font-size: 18px; }
 
-    /* ---- Основная область ---- */
-    .main {
+    .main-content {
       flex: 1;
-      padding: 24px 30px;
+      padding: 20px 28px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      background: var(--bg-body);
     }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .header h1 {
-      font-weight: 600;
-      font-size: 24px;
-      color: #24292e;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .header h1 small {
-      font-size: 16px;
-      font-weight: 400;
-      color: #586069;
-    }
+
     .breadcrumb {
-      background: #ffffff;
-      padding: 10px 16px;
-      border-radius: 8px;
-      border: 1px solid #d0d7de;
+      background: var(--bg-card);
+      padding: 10px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
       display: flex;
       align-items: center;
       flex-wrap: wrap;
       gap: 4px;
       font-size: 15px;
       margin-bottom: 20px;
+      box-shadow: var(--shadow);
     }
     .breadcrumb a {
-      color: #0366d6;
+      color: var(--text-accent);
       text-decoration: none;
       cursor: pointer;
     }
-    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb a:hover { color: #79c0ff; text-decoration: underline; }
     .breadcrumb .home-icon { font-size: 18px; margin-right: 4px; }
-    .breadcrumb .separator { color: #586069; margin: 0 4px; }
-    .breadcrumb .current { color: #24292e; font-weight: 500; }
+    .breadcrumb .separator { color: var(--text-secondary); margin: 0 4px; }
+    .breadcrumb .current { color: var(--text-primary); font-weight: 500; }
 
-    /* ---- Список файлов ---- */
+    /* Список файлов – каждая строка кликабельна */
     .file-grid {
       flex: 1;
       overflow-y: auto;
-      background: #ffffff;
-      border-radius: 12px;
-      border: 1px solid #d0d7de;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
       padding: 0;
       list-style: none;
     }
@@ -120,114 +237,208 @@
       display: flex;
       align-items: center;
       padding: 12px 20px;
-      border-bottom: 1px solid #eaeef2;
-      transition: background 0.1s;
+      border-bottom: 1px solid var(--border-color);
+      transition: background 0.15s;
       gap: 16px;
+      cursor: pointer;         /* теперь вся строка кликабельна */
     }
     .file-grid li:last-child { border-bottom: none; }
-    .file-grid li:hover { background: #f6f8fa; }
-    .file-grid .icon {
-      font-size: 20px;
+    .file-grid li:hover { background: #1c2333; }
+    .file-grid li .icon {
+      font-size: 22px;
       width: 32px;
       text-align: center;
-      color: #586069;
+      color: var(--text-secondary);
+      flex-shrink: 0;
     }
-    .file-grid .name {
+    .file-grid li .name {
       flex: 1;
       font-weight: 500;
-      color: #24292e;
-      cursor: pointer;
+      color: var(--text-primary);
       text-decoration: none;
+      pointer-events: none;   /* чтобы клик по названию не перехватывался отдельно */
     }
-    .file-grid .name:hover { color: #0366d6; text-decoration: underline; }
-    .file-grid .size {
-      color: #586069;
+    .file-grid li .size {
+      color: var(--text-secondary);
       font-size: 14px;
       white-space: nowrap;
       margin-right: 16px;
     }
-    .file-grid .actions {
+    .file-grid li .actions {
       display: flex;
       gap: 10px;
+      pointer-events: auto;   /* кнопки остаются кликабельными */
     }
-    .file-grid .actions button {
-      background: none;
-      border: 1px solid #d0d7de;
+    .file-grid li .actions button {
+      background: transparent;
+      border: 1px solid var(--border-color);
       border-radius: 6px;
-      padding: 4px 10px;
+      padding: 4px 12px;
       font-size: 13px;
       cursor: pointer;
-      color: #24292e;
-      transition: all 0.15s;
+      color: var(--text-secondary);
+      transition: all 0.2s;
       display: flex;
       align-items: center;
       gap: 4px;
     }
-    .file-grid .actions button:hover {
-      background: #f0f6ff;
-      border-color: #0366d6;
-      color: #0366d6;
+    .file-grid li .actions button:hover {
+      background: #1c2333;
+      border-color: var(--text-accent);
+      color: var(--text-accent);
     }
-    .file-grid .actions button.copy-link { border-color: #2ea44f; color: #2ea44f; }
-    .file-grid .actions button.copy-link:hover { background: #eaffea; }
+    .file-grid li .actions button.copy-link {
+      border-color: #238636;
+      color: #3fb950;
+    }
+    .file-grid li .actions button.copy-link:hover {
+      background: rgba(35, 134, 54, 0.15);
+      border-color: #2ea44f;
+      color: #4cda64;
+    }
 
-    /* ---- Состояния ---- */
     .loading, .empty, .error {
       padding: 40px 20px;
       text-align: center;
-      color: #586069;
+      color: var(--text-secondary);
     }
-    .error { color: #d73a49; }
-    .empty { color: #586069; }
+    .error { color: #f85149; }
 
-    /* ---- Адаптивность ---- */
+    /* ===== АДАПТИВ ===== */
     @media (max-width: 700px) {
-      body { flex-direction: column; }
-      .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #d0d7de; flex-direction: row; overflow-x: auto; padding: 10px; }
+      .profile-header { padding: 20px 16px; }
+      .profile-header .cover { flex-direction: column; align-items: center; text-align: center; }
+      .profile-header .info h1 { font-size: 24px; }
+      .profile-header .actions { justify-content: center; }
+      .main-layout { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px 16px;
+        gap: 6px;
+      }
       .sidebar-title { display: none; }
-      .sidebar-item { padding: 8px 16px; border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
-      .sidebar-item.active { border-left: none; border-bottom-color: #0366d6; }
-      .main { padding: 16px; }
+      .sidebar-item {
+        padding: 6px 14px;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+        font-size: 14px;
+      }
+      .sidebar-item.active { border-left: none; border-bottom-color: var(--text-accent); }
+      .main-content { padding: 16px; }
       .file-grid li { flex-wrap: wrap; gap: 8px; }
-      .file-grid .size { margin-right: 0; width: 100%; padding-left: 48px; }
-      .file-grid .actions { margin-left: 48px; }
+      .file-grid li .size { margin-right: 0; width: 100%; padding-left: 48px; }
+      .file-grid li .actions { margin-left: 48px; }
     }
   </style>
 </head>
 <body>
-  <!-- Боковое меню -->
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-title">📁 <span>Разделы</span></div>
-    <div id="sidebar-list"></div>
-  </div>
 
-  <!-- Основная область -->
-  <div class="main">
-    <div class="header">
-      <h1>Файлы <small id="current-section-label">корень</small></h1>
+  <!-- =============================================================
+       ШАПКА (с аватаркой, обложкой, кнопками)
+       ============================================================= -->
+  <header class="profile-header">
+    <div class="cover">
+      <div class="avatar">
+        <!-- 
+          👇 ЗАМЕНИТЕ ССЫЛКУ НА СВОЮ АВАТАРКУ
+          Если картинки нет – будут показаны инициалы (КП)
+        -->
+        <img src="https://avatars.githubusercontent.com/ваш-логин" alt="Аватар" />
+        <!-- <div class="initials">КП</div> -->
+      </div>
+      <div class="info">
+        <h1>КомптПро</h1>
+        <div class="status">
+          <span class="dot"></span> В сети · Хранилище файлов
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary">➕ Загрузить</button>
+        <button>🔗 Поделиться</button>
+        <span class="file-count">📂 <span id="file-counter">0</span> файлов</span>
+      </div>
     </div>
-    <div class="breadcrumb" id="breadcrumb"></div>
-    <ul class="file-grid" id="file-list"><li class="loading">⏳ Загрузка...</li></ul>
+  </header>
+
+  <!-- =============================================================
+       ОСНОВНАЯ ЧАСТЬ
+       ============================================================= -->
+  <div class="main-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-title">Разделы</div>
+      <div id="sidebar-list"></div>
+    </aside>
+
+    <main class="main-content">
+      <div class="breadcrumb" id="breadcrumb"></div>
+      <ul class="file-grid" id="file-list"><li class="loading">⏳ Загрузка...</li></ul>
+    </main>
   </div>
 
   <script>
-    // --------------------------------------------------------------
-    //  НАСТРОЙКИ
-    // --------------------------------------------------------------
-    const USERNAME = 'kompypro';          // ЗАМЕНИТЕ НА СВОЁ
+    // ================================================================
+    //  НАСТРОЙКИ (поменяйте только USERNAME)
+    // ================================================================
+    const USERNAME = 'kompypro';          // 👈 ваш логин
     const REPO = 'kompypro.github.io';
-    const BRANCH = 'main';               // или 'master'
+    const BRANCH = 'main';                // или 'master'
 
-    // --------------------------------------------------------------
-    //  СОСТОЯНИЕ
-    // --------------------------------------------------------------
+    // ----------------------------------------------------------------
+    //  ОСТАЛЬНОЙ КОД (не трогайте, если не уверены)
+    // ----------------------------------------------------------------
+
     let currentPath = '';
     let currentSection = '';
 
-    // --------------------------------------------------------------
-    //  ФУНКЦИИ
-    // --------------------------------------------------------------
+    // ---- Определяем иконку для файла по расширению ----
+    function getFileIcon(filename) {
+      const ext = filename.split('.').pop().toLowerCase();
+      const map = {
+        'pdf': 'fa-file-pdf',
+        'jpg': 'fa-file-image',
+        'jpeg': 'fa-file-image',
+        'png': 'fa-file-image',
+        'gif': 'fa-file-image',
+        'svg': 'fa-file-image',
+        'zip': 'fa-file-archive',
+        'rar': 'fa-file-archive',
+        '7z': 'fa-file-archive',
+        'tar': 'fa-file-archive',
+        'gz': 'fa-file-archive',
+        'doc': 'fa-file-word',
+        'docx': 'fa-file-word',
+        'xls': 'fa-file-excel',
+        'xlsx': 'fa-file-excel',
+        'ppt': 'fa-file-powerpoint',
+        'pptx': 'fa-file-powerpoint',
+        'mp4': 'fa-file-video',
+        'avi': 'fa-file-video',
+        'mkv': 'fa-file-video',
+        'mp3': 'fa-file-audio',
+        'wav': 'fa-file-audio',
+        'txt': 'fa-file-alt',
+        'md': 'fa-file-alt',
+        'json': 'fa-file-code',
+        'xml': 'fa-file-code',
+        'html': 'fa-file-code',
+        'css': 'fa-file-code',
+        'js': 'fa-file-code',
+        'py': 'fa-file-code',
+        'java': 'fa-file-code',
+        'c': 'fa-file-code',
+        'cpp': 'fa-file-code',
+        'exe': 'fa-file',
+        'msi': 'fa-file',
+      };
+      return map[ext] || 'fa-file';  // по умолчанию – дискета (или стандартный файл)
+    }
 
+    // ---- Скачивание файла ----
     function downloadFile(url, filename) {
       const list = document.getElementById('file-list');
       list.innerHTML = `<li class="loading">⏳ Скачивание ${filename}...</li>`;
@@ -246,6 +457,7 @@
         .catch(err => { alert('Не удалось скачать: ' + err.message); loadContents(currentSection, currentPath); });
     }
 
+    // ---- Копирование ссылки ----
     function copyLink(fileUrl, filename) {
       navigator.clipboard.writeText(fileUrl)
         .then(() => alert(`Ссылка на "${filename}" скопирована!`))
@@ -260,6 +472,7 @@
         });
     }
 
+    // ---- Навигация ----
     function navigateTo(section, path) {
       currentSection = section;
       currentPath = path || '';
@@ -267,10 +480,9 @@
       loadContents(section, currentPath);
       updateBreadcrumb(section, currentPath);
       updateSidebarActive(section);
-      document.getElementById('current-section-label').textContent = section || 'корень';
     }
 
-    // ---- ЗАГРУЗКА СОДЕРЖИМОГО С ИСКЛЮЧЕНИЕМ index.html И README.md ----
+    // ---- Загрузка содержимого папки ----
     function loadContents(section, path) {
       const list = document.getElementById('file-list');
       list.innerHTML = '<li class="loading">⏳ Загрузка...</li>';
@@ -290,13 +502,14 @@
             return;
           }
 
-          // Исключаем index.html и README.md (регистронезависимо)
-          const excludedNames = ['index.html', 'readme.md'];
-          const folders = data.filter(item => item.type === 'dir').sort((a,b) => a.name.localeCompare(b.name));
+          const excluded = ['index.html', 'readme.md'];
+          const folders = data.filter(i => i.type === 'dir').sort((a,b) => a.name.localeCompare(b.name));
           const files = data
-            .filter(item => item.type === 'file' && !excludedNames.includes(item.name.toLowerCase()))
+            .filter(i => i.type === 'file' && !excluded.includes(i.name.toLowerCase()))
             .sort((a,b) => a.name.localeCompare(b.name));
           const all = [...folders, ...files];
+
+          document.getElementById('file-counter').textContent = files.length;
 
           if (all.length === 0) {
             list.innerHTML = '<li class="empty">📭 Папка пуста</li>';
@@ -305,31 +518,25 @@
 
           all.forEach(item => {
             const li = document.createElement('li');
+
+            // Иконка
             const iconSpan = document.createElement('span');
             iconSpan.className = 'icon';
-            iconSpan.textContent = item.type === 'dir' ? '📁' : '📄';
+            if (item.type === 'dir') {
+              iconSpan.innerHTML = '<i class="fas fa-folder"></i>';
+            } else {
+              const iconClass = getFileIcon(item.name);
+              iconSpan.innerHTML = `<i class="fas ${iconClass}"></i>`;
+            }
             li.appendChild(iconSpan);
 
-            const nameLink = document.createElement('a');
-            nameLink.className = 'name';
-            nameLink.textContent = item.name;
+            // Название
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'name';
+            nameSpan.textContent = item.name;
+            li.appendChild(nameSpan);
 
-            if (item.type === 'dir') {
-              nameLink.onclick = (e) => {
-                e.preventDefault();
-                const newPath = path ? path + '/' + item.name : item.name;
-                navigateTo(section, newPath);
-              };
-              nameLink.href = '#';
-            } else {
-              nameLink.href = '#';
-              nameLink.onclick = (e) => {
-                e.preventDefault();
-                downloadFile(item.download_url, item.name);
-              };
-            }
-            li.appendChild(nameLink);
-
+            // Размер (для файлов)
             if (item.type === 'file' && item.size !== undefined) {
               const sizeSpan = document.createElement('span');
               sizeSpan.className = 'size';
@@ -338,12 +545,13 @@
               li.appendChild(sizeSpan);
             }
 
+            // Действия (только для файлов)
             if (item.type === 'file') {
               const actions = document.createElement('div');
               actions.className = 'actions';
 
               const dlBtn = document.createElement('button');
-              dlBtn.innerHTML = '⬇️ Скачать';
+              dlBtn.innerHTML = '<i class="fas fa-download"></i> Скачать';
               dlBtn.onclick = (e) => {
                 e.stopPropagation();
                 downloadFile(item.download_url, item.name);
@@ -352,7 +560,7 @@
 
               const copyBtn = document.createElement('button');
               copyBtn.className = 'copy-link';
-              copyBtn.innerHTML = '🔗 Ссылка';
+              copyBtn.innerHTML = '<i class="fas fa-link"></i> Ссылка';
               copyBtn.onclick = (e) => {
                 e.stopPropagation();
                 copyLink(item.download_url, item.name);
@@ -362,6 +570,19 @@
               li.appendChild(actions);
             }
 
+            // ---- КЛИК ПО ВСЕЙ СТРОКЕ ----
+            li.onclick = (e) => {
+              // Если кликнули по кнопке – не обрабатываем (у них уже свой обработчик)
+              if (e.target.closest('button')) return;
+              if (item.type === 'dir') {
+                const newPath = path ? path + '/' + item.name : item.name;
+                navigateTo(section, newPath);
+              } else {
+                // Для файлов – скачиваем (или можно открывать, но мы скачиваем)
+                downloadFile(item.download_url, item.name);
+              }
+            };
+
             list.appendChild(li);
           });
         })
@@ -370,7 +591,7 @@
         });
     }
 
-    // ---- ХЛЕБНЫЕ КРОШКИ ----
+    // ---- Хлебные крошки ----
     function updateBreadcrumb(section, path) {
       const bc = document.getElementById('breadcrumb');
       bc.innerHTML = '';
@@ -378,7 +599,7 @@
       if (section) {
         const home = document.createElement('a');
         home.className = 'home-icon';
-        home.textContent = '🏠';
+        home.innerHTML = '<i class="fas fa-home"></i>';
         home.onclick = () => { navigateTo('', ''); };
         home.href = '#';
         home.title = 'В корень';
@@ -424,17 +645,17 @@
       }
     }
 
-    // ---- ПОДСВЕТКА АКТИВНОГО РАЗДЕЛА ----
+    // ---- Подсветка в боковом меню ----
     function updateSidebarActive(section) {
       document.querySelectorAll('.sidebar-item').forEach(el => {
         el.classList.toggle('active', el.dataset.section === section);
       });
     }
 
-    // ---- ЗАГРУЗКА РАЗДЕЛОВ (ПАПОК В КОРНЕ) ----
+    // ---- Загрузка разделов (папок в корне) ----
     function loadSections() {
       const sidebarList = document.getElementById('sidebar-list');
-      sidebarList.innerHTML = '<div class="sidebar-item" style="cursor:default;color:#586069;">Загрузка...</div>';
+      sidebarList.innerHTML = '<div class="sidebar-item" style="cursor:default;color:var(--text-secondary);">Загрузка...</div>';
 
       const url = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/?ref=${BRANCH}`;
       fetch(url)
@@ -446,7 +667,7 @@
           const rootItem = document.createElement('div');
           rootItem.className = 'sidebar-item';
           rootItem.dataset.section = '';
-          rootItem.innerHTML = '<span class="icon">📂</span> Все файлы';
+          rootItem.innerHTML = '<span class="icon"><i class="fas fa-folder-open"></i></span> Все файлы';
           rootItem.onclick = () => { navigateTo('', ''); };
           sidebarList.appendChild(rootItem);
 
@@ -454,7 +675,7 @@
             const item = document.createElement('div');
             item.className = 'sidebar-item';
             item.dataset.section = dir.name;
-            item.innerHTML = `<span class="icon">📁</span> ${dir.name}`;
+            item.innerHTML = `<span class="icon"><i class="fas fa-folder"></i></span> ${dir.name}`;
             item.onclick = () => { navigateTo(dir.name, ''); };
             sidebarList.appendChild(item);
           });
@@ -463,19 +684,17 @@
           else updateSidebarActive('');
         })
         .catch(err => {
-          sidebarList.innerHTML = `<div class="sidebar-item" style="color:#d73a49;">Ошибка загрузки разделов</div>`;
+          sidebarList.innerHTML = `<div class="sidebar-item" style="color:#f85149;">Ошибка загрузки</div>`;
         });
     }
 
-    // ---- ИНИЦИАЛИЗАЦИЯ ----
+    // ---- Инициализация ----
     function init() {
       const hash = window.location.hash.substring(1);
       if (hash) {
         const parts = hash.split('/');
-        const sec = parts[0] || '';
-        const p = parts.slice(1).join('/');
-        currentSection = sec;
-        currentPath = p;
+        currentSection = parts[0] || '';
+        currentPath = parts.slice(1).join('/');
       }
       loadSections();
       navigateTo(currentSection, currentPath);
@@ -492,7 +711,6 @@
         loadContents(currentSection, currentPath);
         updateBreadcrumb(currentSection, currentPath);
         updateSidebarActive(currentSection);
-        document.getElementById('current-section-label').textContent = currentSection || 'корень';
       }
     });
 
